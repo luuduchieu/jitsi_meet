@@ -1,3 +1,21 @@
+## 2.0.0
+* BREAKING: Update feature flags to be a class instead of a map.
+* Added more feature flags.
+* PIP hotfix and callback.
+
+## 1.2.0
+* Add support for screen sharing.
+
+## 1.1.0
+* Add support for userAvatarURL.
+* Update Jitsi Meet SDK to 2.11.0.
+* Update iOS deployment target to 11.0.
+
+## 1.0.0
+* Update Jitsi Meet SDK for Android to 2.10.0.
+* Update Jitsi Meet SDK for iOS to 2.10.2.
+* Breaking change for Android. Minimum SDK must be increased to 23.
+
 ## 0.4.1
 * Fixed close meeting programmatically in iOS.
 * Updated formatting to increase pub points.

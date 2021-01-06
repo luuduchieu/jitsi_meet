@@ -3,9 +3,8 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:jitsi_meet/feature_flag/feature_flag.dart';
 
-import 'feature_flag/feature_flag_enum.dart';
-import 'feature_flag/feature_flag_helper.dart';
 import 'jitsi_meeting_listener.dart';
 import 'room_name_constraint.dart';
 import 'room_name_constraint_type.dart';
@@ -98,6 +97,7 @@ class JitsiMeet {
           'featureFlags': options.getFeatureFlags(),
           'userDisplayName': options.userDisplayName,
           'userEmail': options.userEmail,
+          'userAvatarURL': options.userAvatarURL,
         })
         .then((message) =>
             JitsiMeetingResponse(isSuccess: true, message: message))
@@ -156,6 +156,14 @@ class JitsiMeet {
           if (listener.onConferenceTerminated != null)
             listener.onConferenceTerminated(message: message);
           break;
+        case "onPictureInPictureWillEnter":
+          if (listener.onPictureInPictureWillEnter != null)
+            listener.onPictureInPictureWillEnter(message: message);
+          break;
+        case "onPictureInPictureTerminated":
+          if (listener.onPictureInPictureTerminated != null)
+            listener.onPictureInPictureTerminated(message: message);
+          break;
       }
     });
   }
@@ -180,6 +188,14 @@ class JitsiMeet {
 
           // Remove the listener from the map of _perMeetingListeners on terminate
           _perMeetingListeners.remove(listener);
+          break;
+        case "onPictureInPictureWillEnter":
+          if (listener.onPictureInPictureWillEnter != null)
+            listener.onPictureInPictureWillEnter(message: message);
+          break;
+        case "onPictureInPictureTerminated":
+          if (listener.onPictureInPictureTerminated != null)
+            listener.onPictureInPictureTerminated(message: message);
           break;
       }
     }
@@ -219,24 +235,17 @@ class JitsiMeetingOptions {
   bool videoMuted;
   String userDisplayName;
   String userEmail;
-
-  Map<FeatureFlagEnum, bool> featureFlags = new HashMap();
+  String userAvatarURL;
+  FeatureFlag featureFlag;
 
   /// Get feature flags Map with keys as String instead of Enum
   /// Useful as an argument sent to the Kotlin/Swift code
-  Map<String, bool> getFeatureFlags() {
-    Map<String, bool> featureFlagsWithStrings = new HashMap();
-
-    featureFlags.forEach((key, value) {
-      featureFlagsWithStrings[FeatureFlagHelper.featureFlags[key]] = value;
-    });
-
-    return featureFlagsWithStrings;
-  }
+  Map<String, dynamic> getFeatureFlags() =>
+      (featureFlag != null) ? featureFlag.allFeatureFlags() : new HashMap();
 
   @override
   String toString() {
-    return 'JitsiMeetingOptions{room: $room, serverURL: $serverURL, subject: $subject, token: $token, audioMuted: $audioMuted, audioOnly: $audioOnly, videoMuted: $videoMuted, userDisplayName: $userDisplayName, userEmail: $userEmail, featureFlags: $featureFlags }';
+    return 'JitsiMeetingOptions{room: $room, serverURL: $serverURL, subject: $subject, token: $token, audioMuted: $audioMuted, audioOnly: $audioOnly, videoMuted: $videoMuted, userDisplayName: $userDisplayName, userEmail: $userEmail, userAvatarURL: $userAvatarURL, featureFlags: ${getFeatureFlags()} }';
   }
 
 /* Not used yet, needs more research

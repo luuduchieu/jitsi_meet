@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:jitsi_meet/feature_flag/feature_flag_enum.dart';
+import 'package:jitsi_meet/feature_flag/feature_flag.dart';
 import 'package:jitsi_meet/jitsi_meet.dart';
 import 'package:jitsi_meet/jitsi_meeting_listener.dart';
 import 'package:jitsi_meet/room_name_constraint.dart';
@@ -32,6 +32,8 @@ class _MyAppState extends State<MyApp> {
         onConferenceWillJoin: _onConferenceWillJoin,
         onConferenceJoined: _onConferenceJoined,
         onConferenceTerminated: _onConferenceTerminated,
+        onPictureInPictureWillEnter: _onPictureInPictureWillEnter,
+        onPictureInPictureTerminated: _onPictureInPictureTerminated,
         onError: _onError));
   }
 
@@ -187,18 +189,19 @@ class _MyAppState extends State<MyApp> {
       // Enable or disable any feature flag here
       // If feature flag are not provided, default values will be used
       // Full list of feature flags (and defaults) available in the README
-      Map<FeatureFlagEnum, bool> featureFlags = {
-        FeatureFlagEnum.WELCOME_PAGE_ENABLED: false,
-      };
-
+      FeatureFlag featureFlag = FeatureFlag();
+      featureFlag.welcomePageEnabled = false;
       // Here is an example, disabling features for each platform
       if (Platform.isAndroid) {
         // Disable ConnectionService usage on Android to avoid issues (see README)
-        featureFlags[FeatureFlagEnum.CALL_INTEGRATION_ENABLED] = false;
+        featureFlag.callIntegrationEnabled = false;
       } else if (Platform.isIOS) {
         // Disable PIP on iOS as it looks weird
-        featureFlags[FeatureFlagEnum.PIP_ENABLED] = false;
+        featureFlag.pipEnabled = false;
       }
+
+      //uncomment to modify video resolution
+      //featureFlag.resolution = FeatureFlagVideoResolution.MD_RESOLUTION;
 
       // Define meetings options here
       var options = JitsiMeetingOptions()
@@ -210,7 +213,7 @@ class _MyAppState extends State<MyApp> {
         ..audioOnly = isAudioOnly
         ..audioMuted = isAudioMuted
         ..videoMuted = isVideoMuted
-        ..featureFlags.addAll(featureFlags);
+        ..featureFlag = featureFlag;
 
       debugPrint("JitsiMeetingOptions: $options");
       await JitsiMeet.joinMeeting(
@@ -221,6 +224,10 @@ class _MyAppState extends State<MyApp> {
           debugPrint("${options.room} joined with message: $message");
         }, onConferenceTerminated: ({message}) {
           debugPrint("${options.room} terminated with message: $message");
+        }, onPictureInPictureWillEnter: ({message}) {
+          debugPrint("${options.room} entered PIP mode with message: $message");
+        }, onPictureInPictureTerminated: ({message}) {
+          debugPrint("${options.room} exited PIP mode with message: $message");
         }),
         // by default, plugin default constraints are used
         //roomNameConstraints: new Map(), // to disable all constraints
@@ -253,6 +260,14 @@ class _MyAppState extends State<MyApp> {
 
   void _onConferenceTerminated({message}) {
     debugPrint("_onConferenceTerminated broadcasted with message: $message");
+  }
+
+  void _onPictureInPictureWillEnter({message}) {
+    debugPrint("_onPictureInPictureWillEnter broadcasted with message: $message");
+  }
+
+  void _onPictureInPictureTerminated({message}) {
+    debugPrint("_onPictureInPictureTerminated broadcasted with message: $message");
   }
 
   _onError(error) {
